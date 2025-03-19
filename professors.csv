@@ -1,0 +1,18 @@
+email,name,rank,course_id
+professor1@university.edu,Dr. John Smith,Associate,DATA200
+professor2@university.edu,Dr. Alice Green,Senior,MATH101
+professor3@university.edu,Dr. Mark Brown,Associate,CS101
+professor4@university.edu,Dr. Emma Wilson,Professor,STAT300
+professor5@university.edu,Dr. Daniel Adams,Professor,PHYS150
+professor6@university.edu,Dr. Laura Johnson,Assistant,BIO101
+professor7@university.edu,Dr. James Garcia,Associate,CHEM101
+professor8@university.edu,Dr. Olivia Miller,Senior,ENG201
+professor9@university.edu,Dr. Ethan Martinez,Senior,HIST210
+professor10@university.edu,Dr. Sophia Hernandez,Associate,PSYCH101
+professor11@university.edu,Dr. John Smith,Associate,ECON202
+professor12@university.edu,Dr. Alice Green,Associate,PHIL100
+professor13@university.edu,Dr. Mark Brown,Professor,LAW101
+professor14@university.edu,Dr. Emma Wilson,Assistant,BUS301
+professor15@university.edu,Dr. Daniel Adams,Associate,MED101
+professor@example.com,Dr. John,Head Professor,DATA200
+prof@example.com,Dr. Smith,Full Professor,DATA200
