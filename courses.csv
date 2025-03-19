@@ -1,4 +1,5 @@
 course_id,course_name,description
+DATA200,Data Science,Provides fundamentals of data science and Python
 MATH101,Calculus I,Covers differentiation and integration principles
 CS101,Programming,Introduces Python programming and basic algorithms
 STAT300,Statistics,Provides knowledge of probability and regression
