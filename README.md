@@ -1,7 +1,5 @@
 # CheckMyGrade-Application
-CheckMyGrade console-based application
-
-# **CheckMyGrade Application**  
+CheckMyGrade console-based application 
 **DATA 200 - Lab 1**  
 
 ## **Overview**  
@@ -113,7 +111,7 @@ The application includes a set of unit tests in `test_check_my_grade.py` to veri
 - **Report Generation**: Confirms that grade reports are generated correctly and saved.  
 - **Password Encryption**: Tests encryption and decryption methods for security verification.  
 
-The tests validate the correctness of the application, ensuring all operations function as expected.
+The tests validate the correctness of the application which ensures all operations function as expected.
 
 ---
 
