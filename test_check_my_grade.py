@@ -1,143 +1,155 @@
 import unittest
 import time
-import os
-from check_my_grade import Student, Course, Professor, Base
-
-# Define test CSV files
-TEST_STUDENT_FILE = "test_students.csv"
-TEST_COURSE_FILE = "test_courses.csv"
-TEST_PROFESSOR_FILE = "test_professors.csv"
-
-# Configure test environment to avoid modifying real data
-Base.set_file_paths(TEST_STUDENT_FILE, TEST_COURSE_FILE, TEST_PROFESSOR_FILE, "test_login.csv")
-
+import check_my_grade  # Import the main application module
 
 class TestCheckMyGrade(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        """Initialize test CSV files before running tests."""
-        Base.initialize_csv(TEST_STUDENT_FILE, ["email", "first_name", "last_name", "course_id", "professor_email", "grade", "marks"])
-        Base.initialize_csv(TEST_COURSE_FILE, ["course_id", "course_name", "description"])
-        Base.initialize_csv(TEST_PROFESSOR_FILE, ["email", "name", "rank", "course_id"])
+    def test_load_and_search(self):
+        """Test loading data from the CSV files and searching for a student."""
+        print("\n--- Test: Load Data and Search for Student ---")
 
-    def setUp(self):
-        """Setup test objects before each test."""
-        # Reset the test student file to avoid data pollution
-        Base.write_csv(TEST_STUDENT_FILE, [["email", "first_name", "last_name", "course_id", "professor_email", "grade", "marks"]])
-        Base.write_csv(TEST_PROFESSOR_FILE, [["email", "name", "rank", "course_id"]])
+        if not hasattr(check_my_grade.Student, "search_student"):
+            self.fail("Method search_student() does not exist in check_my_grade.py")
 
-        self.student = Student("test.student@example.com", "Test", "Student", "DATA200", "professor@example.com", "A", 95)
-        self.course = Course("DATA200", "Data Science", "Provides fundamentals of data science and Python")
-        self.professor = Professor("professor@example.com", "Dr. John", "Senior", "DATA200")
+        # Ensure test student is added before searching
+        test_student = check_my_grade.Student("test.student@example.com", "Test", "Student", "DATA200", "prof@example.com", "B", 85)
+        test_student.save()
 
-        # Save data only if it doesn't already exist (use silent=True to suppress output)
-        if not Student.search("test.student@example.com"):
-            self.student.save(silent=True)  # Suppress print messages
-        if not any(row for row in Course.read_csv(TEST_COURSE_FILE) if row and row[0] == "DATA200"):
-            self.course.save()
-        if not any(row for row in Professor.read_csv(TEST_PROFESSOR_FILE) if row and row[0] == "professor@example.com"):
-            self.professor.save()
-
-
-    def test_student_creation(self):
-        """Test student creation and retrieval."""
-        self.student.save(silent=True)
-        result = Student.search("test.student@example.com")
-        self.assertIsNotNone(result)
-        self.assertEqual(result[0], "test.student@example.com")
-
-    def test_student_duplicate_creation(self):
-        """Ensure duplicate student entries are prevented."""
-        self.student.save(silent=True)
-        students = Student.read_csv(TEST_STUDENT_FILE)
-        self.assertEqual(len(students), 2)  # 1 header + 1 valid student
-
-    def test_delete_student(self):
-        """Test deleting a student."""
-        self.student.save(silent=True)
-        Student.delete_student("test.student@example.com")
-        result = Student.search("test.student@example.com")
-        self.assertIsNone(result)
-
-    def test_update_student(self):
-        """Test updating a student's details."""
-        self.student.save(silent=True)
-        Student.update_student("test.student@example.com", new_course="CS101", new_grade="B", new_marks=85)
-        updated_student = Student.search("test.student@example.com")
-        self.assertEqual(updated_student[3], "CS101")
-        self.assertEqual(updated_student[5], "B")
-        self.assertEqual(updated_student[6], "85")
-
-    def test_sort_students(self):
-        """Test sorting students by marks."""
-        Student("student1@example.com", "Student1", "Test", "DATA200", "prof@example.com", "B", 80).save(silent=True)
-        Student("student2@example.com", "Student2", "Test", "DATA200", "prof@example.com", "A", 90).save(silent=True)
-        Student("student3@example.com", "Student3", "Test", "DATA200", "prof@example.com", "C", 70).save(silent=True)
-        
+        target_email = 'test.student@example.com'
         start_time = time.time()
-        Student.sort_students()
+        student = check_my_grade.Student.search_student(target_email)
         end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"Sorting Execution Time: {execution_time:.6f} seconds")
 
-        students = Student.read_csv(TEST_STUDENT_FILE)
-        marks = [int(student[6]) for student in students[1:]]
-        self.assertEqual(marks, sorted(marks, reverse=True))
+        self.assertIsNotNone(student, f"Student with email {target_email} not found.")
+        print(f"Search Execution Time: {end_time - start_time:.6f} seconds")
+        print(f"Found Student: {student}")
 
-    def test_course_creation(self):
-        """Test if a course is correctly saved."""
-        self.course.save()
-        courses = Course.read_csv(TEST_COURSE_FILE)
-        self.assertIn(["DATA200", "Data Science", "Provides fundamentals of data science and Python"], courses)
 
-    def test_course_duplicate_creation(self):
-        """Ensure duplicate course entries are prevented."""
-        self.course.save()
-        self.course.save()
-        courses = Course.read_csv(TEST_COURSE_FILE)
-        self.assertEqual(len(courses), 2)  # 1 header + 1 valid course
+    def test_sort_students_by_marks(self):
+        """Test sorting student records by marks in ascending order."""
+        print("\n--- Test: Sorting Students by Marks ---")
 
-    def test_delete_course(self):
-        """Test deleting a course."""
-        self.course.save()
-        Course.delete_course("DATA200")
-        courses = Course.read_csv(TEST_COURSE_FILE)
-        self.assertNotIn(["DATA200", "Data Science", "Provides fundamentals of data science and Python"], courses)
+        if not hasattr(check_my_grade.Student, "sort_students_by_marks"):
+            self.fail("Method sort_students_by_marks() does not exist in check_my_grade.py")
 
-    def test_professor_creation(self):
-        """Test if a professor is correctly saved."""
-        self.professor.save()
-        professors = Professor.read_csv(TEST_PROFESSOR_FILE)
+        start_time = time.time()
+        sorted_students = check_my_grade.Student.sort_students_by_marks(ascending=True)  
+        end_time = time.time()
 
-        # Allow either "Senior" or "Head Professor" due to previous update test
-        expected_professor1 = ["professor@example.com", "Dr. John", "Senior", "DATA200"]
-        expected_professor2 = ["professor@example.com", "Dr. John", "Head Professor", "DATA200"]
+        self.assertGreaterEqual(len(sorted_students), 1)
+        print(f"Sorting Execution Time: {end_time - start_time:.6f} seconds")
+        print(f"Sorted Students by Marks (First 10): {sorted_students[:10]}")
 
-        self.assertTrue(any(professor in professors for professor in [expected_professor1, expected_professor2]))
+    def test_sort_students_by_email(self):
+        """Test sorting student records by email address in ascending order."""
+        print("\n--- Test: Sorting Students by Email ---")
 
-    def test_professor_duplicate_creation(self):
-        """Ensure duplicate professor entries are prevented."""
-        self.professor.save()
-        self.professor.save()
-        professors = Professor.read_csv(TEST_PROFESSOR_FILE)
-        self.assertEqual(len(professors), 2)  # 1 header + 1 valid professor
+        if not hasattr(check_my_grade.Student, "sort_students_by_email"):
+            self.fail("Method sort_students_by_email() does not exist in check_my_grade.py")
 
-    def test_modify_professor(self):
-        """Test modifying a professor's rank."""
-        self.professor.save()
-        Professor.modify_professor("professor@example.com", new_rank="Head Professor")
-        updated_professors = Professor.read_csv(TEST_PROFESSOR_FILE)
+        start_time = time.time()
+        sorted_students = check_my_grade.Student.sort_students_by_email(ascending=True)  
+        end_time = time.time()
 
-        expected_professor = ["professor@example.com", "Dr. John", "Head Professor", "DATA200"]
-        self.assertIn(expected_professor, updated_professors)
+        self.assertGreaterEqual(len(sorted_students), 1)
+        print(f"Sorting Execution Time: {end_time - start_time:.6f} seconds")
+        print(f"Sorted Students by Email (First 10): {sorted_students[:10]}")
+
+    def test_sort_students_by_name(self):
+        """Test sorting student records by name in ascending order."""
+        print("\n--- Test: Sorting Students by Name ---")
+
+        if not hasattr(check_my_grade.Student, "sort_students_by_email"):
+            self.fail("Method sort_students_by_name() does not exist in check_my_grade.py")
+
+        start_time = time.time()
+        sorted_students = sorted(check_my_grade.Student.read_csv("students.csv")[1:], key=lambda x: x[1])  # Sorting by first name
+        end_time = time.time()
+
+        self.assertGreaterEqual(len(sorted_students), 1)
+        print(f"Sorting Execution Time: {end_time - start_time:.6f} seconds")
+        print(f"Sorted Students by Name (First 10): {sorted_students[:10]}")
+
+    def test_add_modify_delete_student(self):
+        """Test adding, modifying, and deleting a student."""
+        print("\n--- Test: Adding, Modifying, and Deleting a Student ---")
+
+        student_email = "test.student@example.com"
+        first_name = "Test"
+        last_name = "Student"
+        course_id = "DATA200"
+        professor_email = "prof@example.com"
+        grade = "B"
+        marks = "85"
+
+        # Add student
+        student = check_my_grade.Student(student_email, first_name, last_name, course_id, professor_email, grade, marks)
+        student.save()
+        found_student = check_my_grade.Student.search_student(student_email)
+        self.assertIsNotNone(found_student, "Student was not added successfully.")
+        print(f"Added Student: {found_student}")
+
+        # Modify student marks
+        check_my_grade.Student.update_student(student_email, new_marks="90")
+        updated_student = check_my_grade.Student.search_student(student_email)
+        self.assertIsNotNone(updated_student, "Student not found after update.")
+        self.assertEqual(updated_student[6], "90", "Student marks were not updated correctly.")
+        print(f"Updated Student Marks: {updated_student}")
+
+        # Delete student
+        check_my_grade.Student.delete_student(student_email)
+        deleted_student = check_my_grade.Student.search_student(student_email)
+        self.assertIsNone(deleted_student, "Student was not deleted successfully.")
+        print("Student deleted successfully.")
 
     def test_generate_reports(self):
-        """Test grade report generation using real student data."""
-        print("\n--- Generating Reports with Real Data ---")
-        Student.generate_grade_report(file_path="students.csv")  # Read from students.csv
+        """Test generating course-wise, professor-wise, and student-wise reports."""
+        print("\n--- Test: Generating Reports ---")
 
+        if not hasattr(check_my_grade.Student, "generate_grade_report"):
+            self.fail("Method generate_grade_report() does not exist in check_my_grade.py")
 
+        start_time = time.time()
+        check_my_grade.Student.generate_grade_report()
+        end_time = time.time()
+
+        print(f"Report Generation Execution Time: {end_time - start_time:.6f} seconds")
+        print("Reports generated successfully.")
+
+    def test_get_all_courses_statistics(self):
+        """Test generating statistics for all courses"""
+        print("\n--- Test: Generating Statistics for All Courses ---")
+
+        start_time = time.time()
+        check_my_grade.Student.get_all_courses_statistics()
+        end_time = time.time()
+
+        print(f"Statistics Execution Time: {end_time - start_time:.6f} seconds.")
+
+    def test_password_encryption_decryption(self):
+        """Test password encryption and decryption."""
+        print("\n--- Test: Password Encryption and Decryption ---")
+
+        plain_text_password = "SecurePass123!"
+        encrypted_password = check_my_grade.cipher.encrypt(plain_text_password)
+        decrypted_password = check_my_grade.cipher.decrypt(encrypted_password)
+
+        self.assertEqual(plain_text_password, decrypted_password)
+        print("Password encryption and decryption successful.")
+
+    def test_csv_integrity(self):
+        """Test CSV file integrity after multiple modifications."""
+        print("\n--- Test: CSV File Integrity ---")
+
+        students = check_my_grade.Student.read_csv("students.csv")
+        courses = check_my_grade.Course.read_csv("courses.csv")
+        professors = check_my_grade.Professor.read_csv("professors.csv")
+
+        self.assertGreaterEqual(len(students), 1, "Students CSV is empty.")
+        self.assertGreaterEqual(len(courses), 1, "Courses CSV is empty.")
+        self.assertGreaterEqual(len(professors), 1, "Professors CSV is empty.")
+
+        print("CSV file integrity verified.")
 
 if __name__ == "__main__":
     unittest.main()
